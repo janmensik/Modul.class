@@ -97,6 +97,8 @@ class Modul {
 				else
 					$orders[] = $partorder;
 				}
+			elseif ($partorder)
+				$orders[] = $partorder;
 			}
 		if (is_array ($orders))
 			$sql .= ' ORDER BY ' . implode (', ', $orders);
