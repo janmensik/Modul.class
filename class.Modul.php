@@ -41,7 +41,11 @@ class Modul {
 		}
 	
 	# ...................................................................
-	function get ($where = null, $order = null, $limit = null, $limit_from = null) {
+	function getNoCalcRows ($where = null, $order = null, $limit = null, $limit_from = null, $nocalcrows = false) {
+		$this->get ($where, $order, $limit, $limit_from, true);
+	}
+	# ...................................................................
+	function get ($where = null, $order = null, $limit = null, $limit_from = null, $nocalcrows = false) {
 		if (!$this->sqlbase)
 			return (false);
 
@@ -97,8 +101,6 @@ class Modul {
 				else
 					$orders[] = $partorder;
 				}
-			elseif ($partorder)
-				$orders[] = $partorder;
 			}
 		if (is_array ($orders))
 			$sql .= ' ORDER BY ' . implode (', ', $orders);
@@ -118,6 +120,10 @@ class Modul {
 		
 		$sql .= ';';
 
+		# nechci pocet vsech radek - zdrzuje
+		if ($nocalcrows)
+			$sql = str_replace (' SQL_CALC_FOUND_ROWS', '', $sql);
+
 		$this->cachesql = $sql;
 
 		# SQL dotaz
@@ -128,7 +134,8 @@ class Modul {
 			}
 		
 		# nactu si kolik by bylo celkove radek (pro lister)
-		$this->cachetotal = $this->DB->getRowsCount ();
+		if (strpos ($this->sqlbase, 'SQL_CALC_FOUND_ROWS') && !$nocalcrows)
+			$this->cachetotal = $this->DB->getRowsCount ();
 
 		return ($data);
 		}
