@@ -41,8 +41,8 @@ class Modul {
 		}
 	
 	# ...................................................................
-	function getNoCalcRows ($where = null, $order = null, $limit = null, $limit_from = null, $nocalcrows = false) {
-		$this->get ($where, $order, $limit, $limit_from, true);
+	function getNoCalcRows ($where = null, $order = null, $limit = null, $limit_from = null) {
+		return ($this->get ($where, $order, $limit, $limit_from, true));
 	}
 	# ...................................................................
 	function get ($where = null, $order = null, $limit = null, $limit_from = null, $nocalcrows = false) {
@@ -279,7 +279,17 @@ class Modul {
 					$output[$key]++;	
 				if ($funct == 'sum' && isset ($row[$key]))
 					$output[$key] += $row[$key];
+				if ($funct == 'avg' && isset ($row[$key])) {
+					$output[$key] += ((int) $row['id'] && $values['id']=='sum') ? $row['id'] * $row[$key] : $row[$key];
+					$counter[$key]++;
+					}
 				}
+
+		foreach ($values as $key=>$funct) {
+			if ($funct=='avg' && $output[$key]) {
+				$output[$key] = $output[$key] / (((int)$output['id'] && $values['id']=='sum') ? $output['id'] : $counter[$key]);
+				}
+			}
 
 		return ($output);
 		}
@@ -304,7 +314,7 @@ class Modul {
 			}
 		# SINGLE UPDATE
 		elseif (is_numeric ($ids)) {
-			$sql = $this->sqlupdate . ' SET ' . implode (', ', $sqltemp) . ' WHERE ' . $this->sqltable . '.' . $this->idformat . ' = "' . (int) $ids . '";';
+			$sql = $this->sqlupdate . ' SET ' . implode (', ', $sqltemp) . ' WHERE ' . $this->sqltable . '.' . $this->idformat . ' = "' . $ids . '";';
 			}
 		# INSERT
 		else {
